@@ -175,20 +175,6 @@ const Layout = () => {
                   {/* Add more options as needed */}
                 </select>
               </div>
-              <button
-                onClick={handleAspectSubmit}
-                style={{
-                  background: "#007bff",
-                  color: "white",
-                  padding: "15px",
-                  border: "none",
-                  cursor: "pointer",
-                  borderRadius: "4px",
-                  transition: "background 0.3s ease-in-out",
-                }}
-              >
-                Submit
-              </button>
             </form>
           </div>
           {/* ========================================= */}
