@@ -8,15 +8,6 @@ import "./App.css";
 import Layout from "./components/Layout";
 
 function App() {
-  const [analyzedData, setAnalyzedData] = useState(null);
-
-  const handleAnalysisData = (data) => {
-    setAnalyzedData(data);
-    console.log(data);
-  };
-
-  
-
   return (
     <Container fluid>
       <Row className="navbar-container">
