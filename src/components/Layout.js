@@ -2,6 +2,60 @@ import React, { useState, useEffect } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import AdditionalInputComponent from "./AdditionalInputComponent";
 import ChartComponent from "./ChartComponent";
+import { Bar } from "react-chartjs-2";
+import { Chart as ChartJS } from "chart.js/auto";
+import { Chart } from "react-chartjs-2";
+import {
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+const SentimentBarChart = ({ sentimentData }) => {
+  const data = {
+    labels: Object.keys(sentimentData),
+    datasets: [
+      {
+        label: "Sentiments",
+        data: Object.values(sentimentData),
+        backgroundColor: ["#F44336", "#FFC107", "#4CAF50"],
+      },
+    ],
+  };
+
+  const options = {
+    responsive: true,
+    scales: {
+      x: {
+        grid: {
+          display: false,
+        },
+      },
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+        },
+      },
+    },
+  };
+
+  return <Bar data={data} options={options} />;
+};
 
 const Layout = () => {
   const aspects = [
@@ -13,11 +67,6 @@ const Layout = () => {
   ];
   const [analyzedData, setAnalyzedData] = useState(null);
   const [selectedAspect, setSelectedAspect] = useState("");
-  //   const handleAnalysisData = (data) => {
-  //     setAnalyzedData(data);
-  //     console.log(data);
-  //   };
-
   //   ==================================
   // aspect dropdown
   // =================================
@@ -25,30 +74,6 @@ const Layout = () => {
   const handleAspectChange = (event) => {
     setSelectedAspect(event.target.value);
   };
-
-  const handleAspectSubmit = async () => {
-    try {
-      const response = await fetch("http://your-backend-api/endpoint", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ selectedAspect }),
-      });
-
-      if (response.ok) {
-        console.log("Data sent successfully!");
-      } else {
-        console.error("Failed to send data.");
-      }
-    } catch (error) {
-      console.error("Error:", error.message);
-    }
-  };
-  //   ==================================
-  // aspect dropdown
-  // =================================
-
   // ===============================
   // file upload component
   // ===============================
@@ -73,12 +98,14 @@ const Layout = () => {
       if (response.ok) {
         console.log("File uploaded successfully!");
         // Call the onFileUpload function with the selected file
-        console.log(response);
+        // console.log(response.json());
+        // you cannot do await json if you have already done json
         const responseData = await response.json();
 
         // Print the response data
-        console.log(responseData.data);
-        setAnalyzedData(responseData.data);
+        console.log(responseData);
+        console.log(response);
+        setAnalyzedData(responseData);
       } else {
         console.error("Failed to upload file.");
       }
@@ -95,34 +122,33 @@ const Layout = () => {
   useEffect(() => {
     console.log("Chart component");
     if (analyzedData) {
-      console.log(analyzedData);
-      const aspects = [
-        "Content",
-        "Instructor",
-        "Pacing",
-        "PracticalApplication",
-        "Engagement",
-      ];
-
-      const aspectChartData = aspects.map((aspect) => {
-        const aspectSentiments = analyzedData.map((entry) => entry[aspect]);
-        const sentimentCounts = {
-          Positive: aspectSentiments.filter((s) => s === "Positive").length,
-          Neutral: aspectSentiments.filter((s) => s === "Neutral").length,
-          Negative: aspectSentiments.filter((s) => s === "Negative").length,
-        };
-
-        return {
-          label: `${aspect} Sentiment`,
-          data: Object.values(sentimentCounts),
-          backgroundColor: ["#4CAF50", "#FFC107", "#F44336"],
-        };
-      });
-
-      setChartData({
-        labels: ["Positive", "Neutral", "Negative"],
-        datasets: aspectChartData,
-      });
+        const data = {
+            labels: Object.keys(analyzedData),
+            datasets: [
+              {
+                label: 'Sentiments',
+                data: Object.values(analyzedData),
+                backgroundColor: ['#F44336', '#FFC107', '#4CAF50'],
+              },
+            ],
+          };
+        
+          const options = {
+            responsive: true,
+            scales: {
+              x: {
+                grid: {
+                  display: false,
+                },
+              },
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  stepSize: 1,
+                },
+              },
+            },
+          };
     }
   }, [analyzedData]);
 
@@ -220,11 +246,13 @@ const Layout = () => {
               Upload
             </button>
           </div>
-          <AdditionalInputComponent />
+          {/* <AdditionalInputComponent /> */}
         </div>
       </Col>
       <Col xs={12} className="chart-layout">
-        <ChartComponent analyzedData={analyzedData} />
+        <div>
+          {analyzedData && <SentimentBarChart sentimentData={analyzedData} />}
+        </div>
       </Col>
     </>
   );
