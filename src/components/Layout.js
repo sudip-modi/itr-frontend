@@ -1,25 +1,26 @@
-import React, { useState , useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import AdditionalInputComponent from "./AdditionalInputComponent";
 import ChartComponent from "./ChartComponent";
 
 const Layout = () => {
+  const aspects = [
+    "Content",
+    "Instructor",
+    "Pacing",
+    "Practical Application",
+    "Engagement",
+  ];
   const [analyzedData, setAnalyzedData] = useState(null);
-
-  const handleAnalysisData = (data) => {
-    setAnalyzedData(data);
-    console.log(data);
-  };
-
-  const handleFileUpload = async (file) => {
-    // Your file upload logic
-    console.log("File received in SidebarComponent:", file);
-  };
+  const [selectedAspect, setSelectedAspect] = useState("");
+  //   const handleAnalysisData = (data) => {
+  //     setAnalyzedData(data);
+  //     console.log(data);
+  //   };
 
   //   ==================================
   // aspect dropdown
   // =================================
-  const [selectedAspect, setSelectedAspect] = useState("");
 
   const handleAspectChange = (event) => {
     setSelectedAspect(event.target.value);
@@ -61,6 +62,8 @@ const Layout = () => {
     try {
       const formData = new FormData();
       formData.append("file", file);
+      // Assume selectedAspect is a state variable containing the selected aspect value
+      formData.append("selectedAspect", selectedAspect);
 
       const response = await fetch("http://localhost:5000/analyze", {
         method: "POST",
@@ -70,6 +73,7 @@ const Layout = () => {
       if (response.ok) {
         console.log("File uploaded successfully!");
         // Call the onFileUpload function with the selected file
+        console.log(response);
         const responseData = await response.json();
 
         // Print the response data
@@ -91,33 +95,39 @@ const Layout = () => {
   useEffect(() => {
     console.log("Chart component");
     if (analyzedData) {
-        console.log(analyzedData);
-      const aspects = ['Content', 'Instructor', 'Pacing', 'PracticalApplication', 'Engagement'];
+      console.log(analyzedData);
+      const aspects = [
+        "Content",
+        "Instructor",
+        "Pacing",
+        "PracticalApplication",
+        "Engagement",
+      ];
 
       const aspectChartData = aspects.map((aspect) => {
         const aspectSentiments = analyzedData.map((entry) => entry[aspect]);
         const sentimentCounts = {
-          Positive: aspectSentiments.filter((s) => s === 'Positive').length,
-          Neutral: aspectSentiments.filter((s) => s === 'Neutral').length,
-          Negative: aspectSentiments.filter((s) => s === 'Negative').length,
+          Positive: aspectSentiments.filter((s) => s === "Positive").length,
+          Neutral: aspectSentiments.filter((s) => s === "Neutral").length,
+          Negative: aspectSentiments.filter((s) => s === "Negative").length,
         };
 
         return {
           label: `${aspect} Sentiment`,
           data: Object.values(sentimentCounts),
-          backgroundColor: ['#4CAF50', '#FFC107', '#F44336'],
+          backgroundColor: ["#4CAF50", "#FFC107", "#F44336"],
         };
       });
 
       setChartData({
-        labels: ['Positive', 'Neutral', 'Negative'],
+        labels: ["Positive", "Neutral", "Negative"],
         datasets: aspectChartData,
       });
     }
   }, [analyzedData]);
 
   return (
-    <div>
+    <>
       <Col xs={3} className="sidebar-container">
         <div
           className="sidebar"
@@ -157,8 +167,11 @@ const Layout = () => {
                   }}
                 >
                   <option value="">Select an Aspect</option>
-                  <option value="Content">Content</option>
-                  <option value="Instructor">Instructor</option>
+                  {aspects.map((aspect) => (
+                    <option key={aspect} value={aspect}>
+                      {aspect}
+                    </option>
+                  ))}
                   {/* Add more options as needed */}
                 </select>
               </div>
@@ -227,7 +240,7 @@ const Layout = () => {
       <Col xs={12} className="chart-layout">
         <ChartComponent analyzedData={analyzedData} />
       </Col>
-    </div>
+    </>
   );
 };
 

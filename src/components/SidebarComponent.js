@@ -5,10 +5,6 @@ import AdditionalInputComponent from "./AdditionalInputComponent";
 import AspectDropdown from "./AspectDropdown";
 
 const SidebarComponent = ({ onAnalysisData }) => {
-  const handleFileUpload = async (file) => {
-    // Your file upload logic
-    console.log("File received in SidebarComponent:", file);
-  };
   return (
     <div
       className="sidebar"
@@ -20,7 +16,7 @@ const SidebarComponent = ({ onAnalysisData }) => {
       }}
     >
       <AspectDropdown />
-      <FileUploadComponent onFileUpload={handleFileUpload} />
+      <FileUploadComponent />
       <AdditionalInputComponent />
     </div>
   );

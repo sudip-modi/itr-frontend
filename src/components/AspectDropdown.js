@@ -8,7 +8,7 @@ const AspectDropdown = () => {
     setSelectedAspect(event.target.value);
   };
 
-  const handleSubmit = async () => {
+  const handleAspectSubmit = async () => {
     try {
       const response = await fetch('http://your-backend-api/endpoint', {
         method: 'POST',
@@ -43,7 +43,7 @@ const AspectDropdown = () => {
           {/* Add more options as needed */}
         </select>
       </div>
-      <button onClick={handleSubmit} style={{ background: '#007bff', color: 'white', padding: '15px', border: 'none', cursor: 'pointer', borderRadius: '4px', transition: 'background 0.3s ease-in-out' }}>
+      <button onClick={handleAspectSubmit} style={{ background: '#007bff', color: 'white', padding: '15px', border: 'none', cursor: 'pointer', borderRadius: '4px', transition: 'background 0.3s ease-in-out' }}>
         Submit
       </button>
     </form>
