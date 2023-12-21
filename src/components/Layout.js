@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col } from "react-bootstrap";
-import AdditionalInputComponent from "./AdditionalInputComponent";
-import ChartComponent from "./ChartComponent";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS } from "chart.js/auto";
-import { Chart } from "react-chartjs-2";
 import {
   CategoryScale,
   LinearScale,
@@ -67,18 +64,17 @@ const Layout = () => {
   ];
   const [analyzedData, setAnalyzedData] = useState(null);
   const [selectedAspect, setSelectedAspect] = useState("");
-  //   ==================================
-  // aspect dropdown
-  // =================================
+  const [file, setFile] = useState(null);
 
+  //   ==================================
+  // aspect dropdown handle value change
+  // =================================
   const handleAspectChange = (event) => {
     setSelectedAspect(event.target.value);
   };
   // ===============================
   // file upload component
   // ===============================
-  const [file, setFile] = useState(null);
-
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
   };
@@ -122,33 +118,33 @@ const Layout = () => {
   useEffect(() => {
     console.log("Chart component");
     if (analyzedData) {
-        const data = {
-            labels: Object.keys(analyzedData),
-            datasets: [
-              {
-                label: 'Sentiments',
-                data: Object.values(analyzedData),
-                backgroundColor: ['#F44336', '#FFC107', '#4CAF50'],
-              },
-            ],
-          };
-        
-          const options = {
-            responsive: true,
-            scales: {
-              x: {
-                grid: {
-                  display: false,
-                },
-              },
-              y: {
-                beginAtZero: true,
-                ticks: {
-                  stepSize: 1,
-                },
-              },
+      const data = {
+        labels: Object.keys(analyzedData),
+        datasets: [
+          {
+            label: "Sentiments",
+            data: Object.values(analyzedData),
+            backgroundColor: ["#F44336", "#FFC107", "#4CAF50"],
+          },
+        ],
+      };
+
+      const options = {
+        responsive: true,
+        scales: {
+          x: {
+            grid: {
+              display: false,
             },
-          };
+          },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 1,
+            },
+          },
+        },
+      };
     }
   }, [analyzedData]);
 
@@ -246,7 +242,6 @@ const Layout = () => {
               Upload
             </button>
           </div>
-          {/* <AdditionalInputComponent /> */}
         </div>
       </Col>
       <Col xs={12} className="chart-layout">
