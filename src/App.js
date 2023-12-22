@@ -1,9 +1,7 @@
 // App.js
-import React, { useState } from "react";
+import React from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import NavbarComponent from "./components/NavbarComponent";
-import SidebarComponent from "./components/SidebarComponent";
-import ChartComponent from "./components/ChartComponent";
 import "./App.css";
 import Layout from "./components/Layout";
 

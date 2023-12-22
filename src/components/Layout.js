@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Container, Row, Col } from "react-bootstrap";
+import React, { useState } from "react";
+import { Col } from "react-bootstrap";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS } from "chart.js/auto";
 import {
@@ -113,40 +113,40 @@ const Layout = () => {
   // file upload component
   // ===============================
 
-  const [chartData, setChartData] = useState(null);
+//   const [chartData, setChartData] = useState(null);
 
-  useEffect(() => {
-    console.log("Chart component");
-    if (analyzedData) {
-      const data = {
-        labels: Object.keys(analyzedData),
-        datasets: [
-          {
-            label: "Sentiments",
-            data: Object.values(analyzedData),
-            backgroundColor: ["#F44336", "#FFC107", "#4CAF50"],
-          },
-        ],
-      };
+//   useEffect(() => {
+//     console.log("Chart component");
+//     if (analyzedData) {
+//       const data = {
+//         labels: Object.keys(analyzedData),
+//         datasets: [
+//           {
+//             label: "Sentiments",
+//             data: Object.values(analyzedData),
+//             backgroundColor: ["#F44336", "#FFC107", "#4CAF50"],
+//           },
+//         ],
+//       };
 
-      const options = {
-        responsive: true,
-        scales: {
-          x: {
-            grid: {
-              display: false,
-            },
-          },
-          y: {
-            beginAtZero: true,
-            ticks: {
-              stepSize: 1,
-            },
-          },
-        },
-      };
-    }
-  }, [analyzedData]);
+//       const options = {
+//         responsive: true,
+//         scales: {
+//           x: {
+//             grid: {
+//               display: false,
+//             },
+//           },
+//           y: {
+//             beginAtZero: true,
+//             ticks: {
+//               stepSize: 1,
+//             },
+//           },
+//         },
+//       };
+//     }
+//   }, [analyzedData]);
 
   return (
     <>
