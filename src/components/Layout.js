@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Col } from "react-bootstrap";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS } from "chart.js/auto";
+import { Pie } from 'react-chartjs-2';
 import {
   CategoryScale,
   LinearScale,
@@ -22,37 +23,57 @@ ChartJS.register(
   Legend
 );
 
-const SentimentBarChart = ({ sentimentData }) => {
-  const data = {
-    labels: Object.keys(sentimentData),
-    datasets: [
-      {
-        label: "Sentiments",
-        data: Object.values(sentimentData),
-        backgroundColor: ["#F44336", "#FFC107", "#4CAF50"],
-      },
-    ],
-  };
 
-  const options = {
-    responsive: true,
-    scales: {
-      x: {
-        grid: {
-          display: false,
-        },
-      },
-      y: {
-        beginAtZero: true,
-        ticks: {
-          stepSize: 1,
-        },
-      },
-    },
-  };
+const SentimentCharts = ({ sentimentData }) => {
+  const [barChartData, setBarChartData] = useState(null);
+  const [pieChartData, setPieChartData] = useState(null);
 
-  return <Bar data={data} options={options} />;
+  useEffect(() => {
+    // Prepare data for bar chart
+    const barData = {
+      labels: Object.keys(sentimentData),
+      datasets: [
+        {
+          label: "Sentiments",
+          data: Object.values(sentimentData),
+          backgroundColor: ["#F44336", "#FFC107", "#4CAF50", "#757575"],
+        },
+      ],
+    };
+    setBarChartData(barData);
+
+    // Prepare data for pie chart
+    const total = Object.values(sentimentData).reduce((acc, count) => acc + count, 0);
+    const pieData = {
+      labels: Object.keys(sentimentData),
+      datasets: [
+        {
+          data: Object.values(sentimentData).map(count => (count / total) * 100),
+          backgroundColor: ["#F44336", "#FFC107", "#4CAF50", "#757575"],
+        },
+      ],
+    };
+    setPieChartData(pieData);
+  }, [sentimentData]);
+
+  return (
+    <div>
+      {barChartData && (
+        <div>
+          <h2>Bar Chart</h2>
+          <Bar data={barChartData} />
+        </div>
+      )}
+      {pieChartData && (
+        <div>
+          <h2>Pie Chart</h2>
+          <Pie data={pieChartData} />
+        </div>
+      )}
+    </div>
+  );
 };
+
 
 const Layout = () => {
   const aspects = [
@@ -246,7 +267,7 @@ const Layout = () => {
       </Col>
       <Col xs={12} className="chart-layout">
         <div>
-          {analyzedData && <SentimentBarChart sentimentData={analyzedData} />}
+          {analyzedData && <SentimentCharts sentimentData={analyzedData} />}
         </div>
       </Col>
     </>
