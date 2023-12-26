@@ -238,6 +238,7 @@ const Layout = () => {
               <input
                 type="file"
                 onChange={handleFileChange}
+                accept=".csv"
                 style={{
                   width: "100%",
                   padding: "12px",
