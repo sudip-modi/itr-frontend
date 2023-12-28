@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Col } from "react-bootstrap";
-import { Bar } from "react-chartjs-2";
+import { Bar, Line, Pie } from "react-chartjs-2";
 import { Chart as ChartJS } from "chart.js/auto";
-import { Pie } from 'react-chartjs-2';
 import {
   CategoryScale,
   LinearScale,
@@ -12,7 +11,6 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -23,19 +21,56 @@ ChartJS.register(
   Legend
 );
 
-
-const SentimentCharts = ({ sentimentData }) => {
+const SentimentCharts = ({
+  sentimentCountData,
+  datewiseSentimentCountData,
+}) => {
   const [barChartData, setBarChartData] = useState(null);
   const [pieChartData, setPieChartData] = useState(null);
+  const [lineChartData, setLineChartData] = useState(null);
+
+  const lineOptions = {
+    responsive: true,
+    interaction: {
+      mode: "index",
+      intersect: false,
+    },
+    stacked: false,
+    plugins: {
+      title: {
+        display: true,
+        text: "Chart.js Line Chart - Multi Axis",
+      },
+    },
+    scales: {
+      y: {
+        type: "linear",
+        display: true,
+        position: "left",
+      },
+      y1: {
+        type: "linear",
+        display: true,
+        position: "right",
+        grid: {
+          drawOnChartArea: false,
+        },
+      },
+    },
+  };
 
   useEffect(() => {
+    // console.log("DATEWISESENTOMENTCOUNTDATA");
+    // console.log(datewiseSentimentCountData);
+    // console.log("SENTIMENTCOUNTDATA");
+    // console.log(sentimentCountData);
     // Prepare data for bar chart
     const barData = {
-      labels: Object.keys(sentimentData),
+      labels: Object.keys(sentimentCountData),
       datasets: [
         {
           label: "Sentiments",
-          data: Object.values(sentimentData),
+          data: Object.values(sentimentCountData),
           backgroundColor: ["#F44336", "#FFC107", "#4CAF50", "#757575"],
         },
       ],
@@ -43,18 +78,66 @@ const SentimentCharts = ({ sentimentData }) => {
     setBarChartData(barData);
 
     // Prepare data for pie chart
-    const total = Object.values(sentimentData).reduce((acc, count) => acc + count, 0);
+    const total = Object.values(sentimentCountData).reduce(
+      (acc, count) => acc + count,
+      0
+    );
     const pieData = {
-      labels: Object.keys(sentimentData),
+      labels: Object.keys(sentimentCountData),
       datasets: [
         {
-          data: Object.values(sentimentData).map(count => (count / total) * 100),
+          data: Object.values(sentimentCountData).map(
+            (count) => (count / total) * 100
+          ),
           backgroundColor: ["#F44336", "#FFC107", "#4CAF50", "#757575"],
         },
       ],
     };
     setPieChartData(pieData);
-  }, [sentimentData]);
+
+    const lineData = {
+      labels: Object.keys(datewiseSentimentCountData),
+      datasets: [
+        {
+          label: "POS",
+          data: Object.values(datewiseSentimentCountData).map(
+            (counts) => counts["POS"]
+          ),
+          backgroundColor: ["#F44336", "#FFC107", "#4CAF50", "#757575"],
+          borderColor: "rgb(255, 99, 132)",
+          yAxisID: "y",
+        },
+        {
+          label: "NEG",
+          data: Object.values(datewiseSentimentCountData).map(
+            (counts) => counts["NEG"]
+          ),
+          borderColor: "rgb(53, 162, 235)",
+          backgroundColor: "rgba(53, 162, 235, 0.5)",
+          yAxisID: "y1",
+        },
+        {
+          label: "NEU",
+          data: Object.values(datewiseSentimentCountData).map(
+            (counts) => counts["NEU"]
+          ),
+          borderColor: "rgba(0, 60, 113, 0.5)",
+          backgroundColor: "rgba(0, 60, 113, 0.5)",
+          yAxisID: "y2",
+        },
+        {
+          label: "N/A",
+          data: Object.values(datewiseSentimentCountData).map(
+            (counts) => counts["N/A"]
+          ),
+          borderColor: "rgba(0, 60, 113, 0.5)",
+          backgroundColor: "rgba(0, 60, 113, 0.5)",
+          yAxisID: "y3",
+        },
+      ],
+    };
+    setLineChartData(lineData);
+  }, [sentimentCountData, datewiseSentimentCountData]);
 
   return (
     <div>
@@ -70,10 +153,15 @@ const SentimentCharts = ({ sentimentData }) => {
           <Pie data={pieChartData} />
         </div>
       )}
+      {lineChartData && (
+        <div>
+          <h2>Line Chart</h2>
+          <Line options={lineOptions} data={lineChartData} />
+        </div>
+      )}
     </div>
   );
 };
-
 
 const Layout = () => {
   const aspects = [
@@ -83,7 +171,9 @@ const Layout = () => {
     "Practical Application",
     "Engagement",
   ];
-  const [analyzedData, setAnalyzedData] = useState(null);
+  const [sentimentCountData, setSentimentCountData] = useState(null);
+  const [datewiseSentimentData, setDatewiseSentimentData] = useState(null);
+
   const [selectedAspect, setSelectedAspect] = useState("");
   const [file, setFile] = useState(null);
 
@@ -107,68 +197,40 @@ const Layout = () => {
       // Assume selectedAspect is a state variable containing the selected aspect value
       formData.append("selectedAspect", selectedAspect);
 
-      const response = await fetch("http://localhost:5000/analyze", {
+      //   ==============================================================================
+      const dateSentiCount = await fetch("http://localhost:5000/analyze_datewise", {
         method: "POST",
         body: formData,
       });
-
-      if (response.ok) {
+      if (dateSentiCount.ok) {
         console.log("File uploaded successfully!");
-        // Call the onFileUpload function with the selected file
-        // console.log(response.json());
         // you cannot do await json if you have already done json
-        const responseData = await response.json();
-
-        // Print the response data
-        console.log(responseData);
-        console.log(response);
-        setAnalyzedData(responseData);
+        const dateSentiCountData = await dateSentiCount.json();
+        console.log(dateSentiCountData);
+        setDatewiseSentimentData(dateSentiCountData);
       } else {
         console.error("Failed to upload file.");
       }
+      //   ==============================================================================
+      const sentiCount = await fetch("http://localhost:5000/analyze", {
+        method: "POST",
+        body: formData,
+      });
+      if (sentiCount.ok) {
+        console.log("File uploaded successfully!");
+        // you cannot do await json if you have already done json
+        const sentiResData = await sentiCount.json();
+        console.log(sentiResData)
+        setSentimentCountData(sentiResData);
+      } else {
+        console.error("Failed to upload file.");
+      }
+      //   ==============================================================================
+
     } catch (error) {
       console.error("Error:", error.message);
     }
   };
-  // ===============================
-  // file upload component
-  // ===============================
-
-//   const [chartData, setChartData] = useState(null);
-
-//   useEffect(() => {
-//     console.log("Chart component");
-//     if (analyzedData) {
-//       const data = {
-//         labels: Object.keys(analyzedData),
-//         datasets: [
-//           {
-//             label: "Sentiments",
-//             data: Object.values(analyzedData),
-//             backgroundColor: ["#F44336", "#FFC107", "#4CAF50"],
-//           },
-//         ],
-//       };
-
-//       const options = {
-//         responsive: true,
-//         scales: {
-//           x: {
-//             grid: {
-//               display: false,
-//             },
-//           },
-//           y: {
-//             beginAtZero: true,
-//             ticks: {
-//               stepSize: 1,
-//             },
-//           },
-//         },
-//       };
-//     }
-//   }, [analyzedData]);
-
   return (
     <>
       <Col xs={3} className="sidebar-container">
@@ -268,7 +330,12 @@ const Layout = () => {
       </Col>
       <Col xs={12} className="chart-layout">
         <div>
-          {analyzedData && <SentimentCharts sentimentData={analyzedData} />}
+          {sentimentCountData && (
+            <SentimentCharts
+              sentimentCountData={sentimentCountData}
+              datewiseSentimentCountData={datewiseSentimentData}
+            />
+          )}
         </div>
       </Col>
     </>
