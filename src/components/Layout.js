@@ -21,13 +21,16 @@ ChartJS.register(
   Legend
 );
 
+
 const SentimentCharts = ({
   sentimentCountData,
   datewiseSentimentCountData,
+  aspectSentimentCountData,
 }) => {
   const [barChartData, setBarChartData] = useState(null);
   const [pieChartData, setPieChartData] = useState(null);
   const [lineChartData, setLineChartData] = useState(null);
+  const [aspectBarChartData, setAspectBarChartData] = useState(null);
 
   const lineOptions = {
     responsive: true,
@@ -59,6 +62,17 @@ const SentimentCharts = ({
     },
   };
 
+  const aspectChartOptions = {
+    scales: {
+      x: {
+        stacked: true,
+      },
+      y: {
+        stacked: true,
+      },
+    },
+  };
+
   useEffect(() => {
     // console.log("DATEWISESENTOMENTCOUNTDATA");
     // console.log(datewiseSentimentCountData);
@@ -77,6 +91,8 @@ const SentimentCharts = ({
     };
     setBarChartData(barData);
 
+
+    // =============================================
     // Prepare data for pie chart
     const total = Object.values(sentimentCountData).reduce(
       (acc, count) => acc + count,
@@ -95,6 +111,9 @@ const SentimentCharts = ({
     };
     setPieChartData(pieData);
 
+
+    // ===============================================
+    // prepare data for line chart
     const lineData = {
       labels: Object.keys(datewiseSentimentCountData),
       datasets: [
@@ -137,7 +156,31 @@ const SentimentCharts = ({
       ],
     };
     setLineChartData(lineData);
-  }, [sentimentCountData, datewiseSentimentCountData]);
+
+    // ========================================================
+    // prepare data for aspectBarChart
+    const aspectBarData = {
+        labels: aspectSentimentCountData.aspects,
+        datasets: [
+          {
+            label: "Positive",
+            data: aspectSentimentCountData.positive_counts,
+            backgroundColor: "green",
+          },
+          {
+            label: "Neutral",
+            data: aspectSentimentCountData.neutral_counts,
+            backgroundColor: "yellow",
+          },
+          {
+            label: "Negative",
+            data: aspectSentimentCountData.negative_counts,
+            backgroundColor: "red",
+          },
+        ],
+      }
+      setAspectBarChartData(aspectBarData)
+  }, [sentimentCountData, datewiseSentimentCountData, aspectSentimentCountData]);
 
   return (
     <div>
@@ -159,21 +202,29 @@ const SentimentCharts = ({
           <Line options={lineOptions} data={lineChartData} />
         </div>
       )}
+      {aspectBarChartData && (
+        <div>
+          <h2>Aspect-Based Sentiment Analysis</h2>
+          <Bar data={aspectBarChartData} options={aspectChartOptions} />
+        </div>
+      )}
     </div>
   );
 };
 
 const Layout = () => {
   const aspects = [
+    "Quality",
     "Content",
     "Instructor",
-    "Pacing",
-    "Practical Application",
+    "Material",
     "Engagement",
+    "Application",
+    "Structure",
   ];
   const [sentimentCountData, setSentimentCountData] = useState(null);
   const [datewiseSentimentData, setDatewiseSentimentData] = useState(null);
-
+  const [aspectSentimentData, setAspectSentimentData] = useState(null);
   const [selectedAspect, setSelectedAspect] = useState("");
   const [file, setFile] = useState(null);
 
@@ -197,11 +248,29 @@ const Layout = () => {
       // Assume selectedAspect is a state variable containing the selected aspect value
       formData.append("selectedAspect", selectedAspect);
 
-      //   ==============================================================================
-      const dateSentiCount = await fetch("http://localhost:5000/analyze_datewise", {
+
+       //   ==============================================================================
+       const aspectCount = await fetch("http://localhost:5000/analyze_aspect", {
         method: "POST",
         body: formData,
       });
+      if (aspectCount.ok) {
+        console.log("File uploaded successfully!");
+        // you cannot do await json if you have already done json
+        const aspectResData = await aspectCount.json();
+        console.log(aspectResData);
+        setAspectSentimentData(aspectResData);
+      } else {
+        console.error("Failed to upload file.");
+      }
+      //   ==============================================================================
+      const dateSentiCount = await fetch(
+        "http://localhost:5000/analyze_datewise",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
       if (dateSentiCount.ok) {
         console.log("File uploaded successfully!");
         // you cannot do await json if you have already done json
@@ -220,13 +289,12 @@ const Layout = () => {
         console.log("File uploaded successfully!");
         // you cannot do await json if you have already done json
         const sentiResData = await sentiCount.json();
-        console.log(sentiResData)
+        console.log(sentiResData);
         setSentimentCountData(sentiResData);
       } else {
         console.error("Failed to upload file.");
       }
-      //   ==============================================================================
-
+     
     } catch (error) {
       console.error("Error:", error.message);
     }
@@ -334,6 +402,7 @@ const Layout = () => {
             <SentimentCharts
               sentimentCountData={sentimentCountData}
               datewiseSentimentCountData={datewiseSentimentData}
+              aspectSentimentCountData={aspectSentimentData}
             />
           )}
         </div>
