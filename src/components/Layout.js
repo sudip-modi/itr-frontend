@@ -11,6 +11,8 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import Select from "react-select";
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -21,6 +23,15 @@ ChartJS.register(
   Legend
 );
 
+const aspectOptions = [
+  { value: "Quality", label: "Quality" },
+  { value: "Content", label: "Content" },
+  { value: "Instructor", label: "Instructor" },
+  { value: "Material", label: "Material" },
+  { value: "Engagement", label: "Engagement" },
+  { value: "Application", label: "Application" },
+  { value: "Structure", label: "Structure" },
+];
 
 const SentimentCharts = ({
   sentimentCountData,
@@ -91,7 +102,6 @@ const SentimentCharts = ({
     };
     setBarChartData(barData);
 
-
     // =============================================
     // Prepare data for pie chart
     const total = Object.values(sentimentCountData).reduce(
@@ -110,7 +120,6 @@ const SentimentCharts = ({
       ],
     };
     setPieChartData(pieData);
-
 
     // ===============================================
     // prepare data for line chart
@@ -160,27 +169,31 @@ const SentimentCharts = ({
     // ========================================================
     // prepare data for aspectBarChart
     const aspectBarData = {
-        labels: aspectSentimentCountData.aspects,
-        datasets: [
-          {
-            label: "Positive",
-            data: aspectSentimentCountData.positive_counts,
-            backgroundColor: "green",
-          },
-          {
-            label: "Neutral",
-            data: aspectSentimentCountData.neutral_counts,
-            backgroundColor: "yellow",
-          },
-          {
-            label: "Negative",
-            data: aspectSentimentCountData.negative_counts,
-            backgroundColor: "red",
-          },
-        ],
-      }
-      setAspectBarChartData(aspectBarData)
-  }, [sentimentCountData, datewiseSentimentCountData, aspectSentimentCountData]);
+      labels: aspectSentimentCountData.aspects,
+      datasets: [
+        {
+          label: "Positive",
+          data: aspectSentimentCountData.positive_counts,
+          backgroundColor: "green",
+        },
+        {
+          label: "Neutral",
+          data: aspectSentimentCountData.neutral_counts,
+          backgroundColor: "yellow",
+        },
+        {
+          label: "Negative",
+          data: aspectSentimentCountData.negative_counts,
+          backgroundColor: "red",
+        },
+      ],
+    };
+    setAspectBarChartData(aspectBarData);
+  }, [
+    sentimentCountData,
+    datewiseSentimentCountData,
+    aspectSentimentCountData,
+  ]);
 
   return (
     <div>
@@ -213,27 +226,28 @@ const SentimentCharts = ({
 };
 
 const Layout = () => {
-  const aspects = [
-    "Quality",
-    "Content",
-    "Instructor",
-    "Material",
-    "Engagement",
-    "Application",
-    "Structure",
-  ];
   const [sentimentCountData, setSentimentCountData] = useState(null);
   const [datewiseSentimentData, setDatewiseSentimentData] = useState(null);
   const [aspectSentimentData, setAspectSentimentData] = useState(null);
-  const [selectedAspect, setSelectedAspect] = useState("");
+  const [selectedAspects, setSelectedAspects] = useState([]);
   const [file, setFile] = useState(null);
 
   //   ==================================
   // aspect dropdown handle value change
   // =================================
-  const handleAspectChange = (event) => {
-    setSelectedAspect(event.target.value);
+  const handleAspectsChange = (selectedAspect) => {
+    setSelectedAspects((prevSelectedAspects) => {
+      if (prevSelectedAspects.includes(selectedAspect)) {
+        // Remove the aspect if already selected
+        return prevSelectedAspects.filter((aspect) => aspect !== selectedAspect);
+      } else {
+        // Add the aspect if not selected
+        return [...prevSelectedAspects, selectedAspect];
+      }
+    });
+    console.log(Array.from(selectedAspects));
   };
+  
   // ===============================
   // file upload component
   // ===============================
@@ -246,11 +260,11 @@ const Layout = () => {
       const formData = new FormData();
       formData.append("file", file);
       // Assume selectedAspect is a state variable containing the selected aspect value
-      formData.append("selectedAspect", selectedAspect);
+      formData.append("selectedAspects", Array.from(selectedAspects));
 
-
-       //   ==============================================================================
-       const aspectCount = await fetch("http://localhost:5000/analyze_aspect", {
+      console.log(formData.get("selectedAspects"));
+      //   ==============================================================================
+      const aspectCount = await fetch("http://localhost:5000/analyze_aspect", {
         method: "POST",
         body: formData,
       });
@@ -264,6 +278,8 @@ const Layout = () => {
         console.error("Failed to upload file.");
       }
       //   ==============================================================================
+      //   delete selected aspects from form data because it is not needed for the next two apis
+      formData.delete("selectedAspects");
       const dateSentiCount = await fetch(
         "http://localhost:5000/analyze_datewise",
         {
@@ -281,6 +297,7 @@ const Layout = () => {
         console.error("Failed to upload file.");
       }
       //   ==============================================================================
+      //   selected aspects is already deleted from formdata, no need to do it again
       const sentiCount = await fetch("http://localhost:5000/analyze", {
         method: "POST",
         body: formData,
@@ -294,11 +311,13 @@ const Layout = () => {
       } else {
         console.error("Failed to upload file.");
       }
-     
     } catch (error) {
       console.error("Error:", error.message);
     }
   };
+
+  //   ***********************************************************************
+  //   ***********************************************************************
   return (
     <>
       <Col xs={3} className="sidebar-container">
@@ -313,42 +332,36 @@ const Layout = () => {
         >
           {/* ========================================= */}
           <div className="ad-container">
-            <form
-              style={{ marginBottom: "20px" }}
-              onSubmit={(e) => e.preventDefault()}
-            >
-              <div>
-                <label
-                  style={{
-                    display: "block",
-                    marginBottom: "10px",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Select Aspect:
-                </label>
-                <select
-                  value={selectedAspect}
-                  onChange={handleAspectChange}
-                  style={{
-                    width: "100%",
-                    padding: "12px",
-                    marginBottom: "15px",
-                    boxSizing: "border-box",
-                    borderRadius: "4px",
-                    border: "1px solid #ddd",
-                  }}
-                >
-                  <option value="">Select an Aspect</option>
-                  {aspects.map((aspect) => (
-                    <option key={aspect} value={aspect}>
-                      {aspect}
-                    </option>
-                  ))}
-                  {/* Add more options as needed */}
-                </select>
-              </div>
-            </form>
+          <form
+  style={{ marginBottom: "20px" }}
+  onSubmit={(e) => e.preventDefault()}
+>
+  <div>
+    <label
+      style={{
+        display: "block",
+        marginBottom: "10px",
+        fontWeight: "bold",
+      }}
+    >
+      Select Aspects:
+    </label>
+    {aspectOptions.map((option) => (
+      <div key={option.value} style={{ marginBottom: "10px" }}>
+        <input
+          type="checkbox"
+          id={option.value}
+          name="selectedAspects"
+          value={option.value}
+          checked={selectedAspects.includes(option.value)}
+          onChange={() => handleAspectsChange(option.value)}
+        />
+        <label htmlFor={option.value}>{option.label}</label>
+      </div>
+    ))}
+  </div>
+</form>
+
           </div>
           {/* ========================================= */}
           <div

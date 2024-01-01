@@ -20,6 +20,9 @@ main {
   flex-grow: 1;
 }
 
+.sidebar-container{
+    height: 100%;
+}
 .sidebar {
   background: #f0f0f0;
   padding: 20px;
@@ -118,3 +121,39 @@ button:hover {
     width: 100%;
   }
 }
+
+
+/* Add this CSS to your existing styles or create a new CSS file */
+
+/* Style for the checkbox container */
+.checkbox-container {
+    margin-bottom: 20px;
+  }
+  
+  /* Style for individual checkbox */
+  .checkbox-item {
+    margin-bottom: 10px;
+  }
+  
+  /* Style for the checkbox input */
+  .checkbox-item input {
+    margin-right: 8px; /* Adjust the spacing between the checkbox and label */
+  }
+  
+  /* Style for the checkbox label */
+  .checkbox-item label {
+    font-weight: bold;
+    display: inline-block;
+  }
+  
+  /* Style for the checkbox when checked */
+  .checkbox-item input:checked + label {
+    color: #007bff; /* Change color when checked */
+  }
+  
+  /* Style for the checkbox hover effect */
+  .checkbox-item:hover {
+    background-color: #f0f0f0; /* Change background color on hover */
+    transition: background-color 0.3s ease-in-out;
+  }
+  
